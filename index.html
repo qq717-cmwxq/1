@@ -3,242 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>人设模板转换器</title>
+    <title>通用人设模板转换器</title>
     <style>
         * {
             box-sizing: border-box;
         }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f7fb;
+            background: #f1f5f9;
             margin: 0;
-            padding: 20px;
-            color: #1e293b;
+            padding: 16px;
+            color: #0f172a;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             text-align: center;
-            margin-bottom: 0.5rem;
-            color: #0f172a;
+            margin-bottom: 0.25rem;
         }
         .sub {
             text-align: center;
             color: #475569;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
-        /* 三栏布局 */
-        .row {
+        .grid {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            margin-bottom: 20px;
         }
-        .card {
+        .panel {
             flex: 1;
-            min-width: 250px;
+            min-width: 280px;
             background: white;
             border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 18px;
             display: flex;
             flex-direction: column;
         }
-        .card h2 {
-            font-size: 1.3rem;
+        .panel h2 {
+            font-size: 1.2rem;
             margin-top: 0;
-            margin-bottom: 1rem;
+            margin-bottom: 12px;
             border-left: 4px solid #3b82f6;
-            padding-left: 12px;
+            padding-left: 10px;
         }
         textarea {
             width: 100%;
             padding: 12px;
-            font-size: 16px;
-            font-family: monospace;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
             border: 1px solid #cbd5e1;
             border-radius: 16px;
             resize: vertical;
-            background: #fafcff;
+            background: #fefce8;
+            margin-bottom: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
             margin-bottom: 12px;
         }
         button {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 12px 16px;
+            padding: 10px 16px;
             border-radius: 40px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 8px;
+            margin-right: 8px;
+            margin-bottom: 8px;
         }
-        button:hover {
-            background: #2563eb;
+        button.secondary {
+            background: #64748b;
         }
-        .output-area {
-            background: #f1f5f9;
+        button.warning {
+            background: #f59e0b;
+        }
+        .output {
+            background: #f8fafc;
             border-radius: 20px;
             padding: 16px;
             white-space: pre-wrap;
             word-break: break-word;
-            font-family: monospace;
-            font-size: 15px;
-            min-height: 200px;
-            max-height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
         }
-        .footer {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #62748c;
-            margin-top: 2rem;
+        .missing-list {
+            background: #fff7ed;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        hr {
+            margin: 16px 0;
         }
         .tip {
-            background: #eef2ff;
-            border-radius: 16px;
-            padding: 12px;
-            font-size: 0.85rem;
-            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #62748c;
+            margin-top: 8px;
         }
-        .flex-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        @media (max-width: 800px) {
-            body { padding: 12px; }
-            .card { min-width: 100%; }
+        @media (max-width: 900px) {
+            .panel { min-width: 100%; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📖 人设模板转换器</h1>
-    <div class="sub">旧模板 → 新模板 · 自动套用 + 补充内容</div>
+    <h1>🧩 通用人设模板转换器</h1>
+    <div class="sub">任意旧人设 → 任意新模板 · 智能提取 · 可指定插入位置</div>
 
-    <div class="row">
-        <!-- 左侧：新模板（固定） -->
-        <div class="card">
-            <h2>📌 步骤1：新模板（固定）</h2>
-            <textarea id="newTemplate" rows="6" placeholder='例如：
-【姓名】是一位【性格】的角色，擅长【能力】。补充说明：{{补充内容}}'></textarea>
-            <div class="tip">💡 使用 <code>{{补充内容}}</code> 作为占位符，系统会自动替换你输入的补充内容。</div>
+    <div class="grid">
+        <!-- 左侧：新模板 -->
+        <div class="panel">
+            <h2>📌 新模板（可直接编辑）</h2>
+            <textarea id="newTemplate" rows="12" placeholder="粘贴你的新模板..."></textarea>
+            <button id="resetTemplateBtn" class="secondary">恢复默认模板</button>
+            <div class="tip">✏️ 你可以随时修改上方的模板内容，转换时会使用最新版本。</div>
         </div>
 
-        <!-- 中间：旧人设 + 补充内容 -->
-        <div class="card">
-            <h2>✍️ 步骤2：旧人设 & 补充内容</h2>
-            <textarea id="oldContent" rows="6" placeholder="粘贴你按照旧模板写好的某一个人设，例如：
-姓名：林晓
-性格：温柔内敛
-能力：治愈魔法"></textarea>
-            <textarea id="extraContent" rows="3" placeholder="补充内容（新信息）例如：觉醒后获得预言能力"></textarea>
-            <button id="convertBtn">✨ 转换套用</button>
-            <div class="tip">📌 旧人设里建议有【姓名】【性格】【能力】等关键词，系统会智能提取。</div>
+        <!-- 中间：旧人设 + 补充 -->
+        <div class="panel">
+            <h2>📖 旧人设（任意格式）</h2>
+            <textarea id="oldProfile" rows="10" placeholder="粘贴你写好的旧人设（支持任何格式：标签、纯文本、JSON等）"></textarea>
+            
+            <h2>➕ 补充内容（可选）</h2>
+            <input type="text" id="extraText" placeholder="例如：觉醒后获得预言能力">
+            <input type="text" id="insertPosition" placeholder="插入位置（可选）例如：character_name 下面 / 末尾 / background_story 里面">
+            
+            <div class="flex-row">
+                <button id="convertBtn">✨ 智能转换</button>
+                <button id="copyResultBtn" class="secondary">📋 复制结果</button>
+            </div>
+            <div class="tip">
+                💡 <strong>插入位置示例：</strong><br>
+                - 留空 = 追加到末尾<br>
+                - “character_name 下面” = 放在 character_name 那行之后<br>
+                - “background_story 里面” = 放在 background_story 区块内<br>
+                - 支持模糊匹配字段名
+            </div>
         </div>
 
         <!-- 右侧：结果 -->
-        <div class="card">
+        <div class="panel">
             <h2>✅ 转换结果</h2>
-            <div id="result" class="output-area">等待生成…</div>
-            <div class="flex-buttons" style="margin-top: 12px;">
-                <button id="copyBtn">📋 复制结果</button>
-            </div>
+            <div id="result" class="output">等待生成...</div>
+            <div id="missingInfo" class="missing-list" style="display:none;"></div>
         </div>
-    </div>
-    <div class="footer">
-        所有处理均在浏览器本地完成，不会上传任何数据。
     </div>
 </div>
 
 <script>
     (function() {
-        // 默认新模板示例
-        const defaultTemplate = `【姓名】是一位【性格】的角色，擅长【能力】。\n补充说明：{{补充内容}}`;
-        const newTemplateTextarea = document.getElementById('newTemplate');
-        if (newTemplateTextarea && newTemplateTextarea.value.trim() === '') {
-            newTemplateTextarea.value = defaultTemplate;
+        // 默认新模板（你之前提供的 YAML 格式）
+        const DEFAULT_TEMPLATE = `char_name:
+  Chinese name: 
+  Nickname: 
+  age: 
+  gender: 
+  height: 
+  identity:
+    - 
+  background_story:
+    童年(0-12岁):
+    少年(13-18岁):
+    青年(19-35岁):
+    中年(35-至今):
+    现状:
+  
+  social_status: 
+    - 
+
+  appearance:
+    hair: 
+    eyes: 
+    skin:
+    face_style: 
+    build: 
+      - 
+  attire:
+    business_formal:
+    business_casual:
+    casual_wear:
+    home_wear:
+
+  archetype: 
+
+  personality:
+    core_traits: 
+      - : ""
+    romantic_traits: 
+      - : ""
+       
+
+  lifestyle_behaviors:
+    - 
+    - 
+  
+  work_behaviors:
+    - 
+  
+  emotional_behaviors:
+    angry:
+    happy: 
+
+  goals:
+    - 
+  
+  relationships:
+    - name: 
+      relationship: 
+      description: 
+
+  shared_history_with_user:
+    - 
+    - 
+
+  weakness:
+    - 
+
+  likes:
+    - 
+
+  dislikes:
+    - 
+  
+  skills:
+    - 工作: ["",""]
+    - 生活: ["",""]
+    - 爱好: ["",""]
+
+  NSFW_information:
+    Sex_related traits:
+      experiences: 
+      sexual_orientation: 
+      sexual_role: 
+      sexual_habits: 
+        - 
+    Kinks: 
+    Limits:`;
+
+        // DOM 元素
+        const newTemplateArea = document.getElementById('newTemplate');
+        const oldProfileArea = document.getElementById('oldProfile');
+        const extraTextInput = document.getElementById('extraText');
+        const insertPositionInput = document.getElementById('insertPosition');
+        const convertBtn = document.getElementById('convertBtn');
+        const copyResultBtn = document.getElementById('copyResultBtn');
+        const resultDiv = document.getElementById('result');
+        const missingInfoDiv = document.getElementById('missingInfo');
+        const resetTemplateBtn = document.getElementById('resetTemplateBtn');
+
+        // 初始化默认模板
+        if (!newTemplateArea.value) {
+            newTemplateArea.value = DEFAULT_TEMPLATE;
         }
 
-        // 从旧文本中智能提取字段（支持 姓名：xxx  或 【姓名】xxx 等）
-        function extractField(text, fieldName) {
-            // 多种匹配模式
+        resetTemplateBtn.addEventListener('click', () => {
+            newTemplateArea.value = DEFAULT_TEMPLATE;
+            resultDiv.innerText = '模板已重置，点击“智能转换”生成结果。';
+            missingInfoDiv.style.display = 'none';
+        });
+
+        // 智能提取旧人设中的信息（支持任意格式）
+        function extractFromOldProfile(text) {
+            const extracted = {};
+            
+            // 通用正则匹配：中英文冒号、括号、标签等
             const patterns = [
-                new RegExp(`${fieldName}[：:]\\s*([^\\n\\r【】]+)`, 'i'),
-                new RegExp(`【${fieldName}】\\s*([^\\n\\r]+)`, 'i'),
-                new RegExp(`${fieldName}\\s*=\\s*([^\\n\\r]+)`, 'i'),
-                new RegExp(`${fieldName}[：:]\\s*(.+?)(?:\\n|$)`, 'i')
+                // 名称/姓名
+                { key: 'Chinese name', regex: /(?:名称|姓名|name)[：:]\s*([^\n\r【】<>]+)/i },
+                { key: 'Nickname', regex: /(?:昵称|nickname)[：:]\s*([^\n\r]+)/i },
+                { key: 'age', regex: /(?:年龄|age)[：:]\s*(\d+)/i },
+                { key: 'gender', regex: /(?:性别|gender)[：:]\s*([^\n\r]+)/i },
+                { key: 'height', regex: /(?:身高|height)[：:]\s*([^\n\r]+)/i },
+                // 外貌
+                { key: 'hair', regex: /(?:发型|头发|hair)[：:]\s*([^\n\r]+)/i },
+                { key: 'eyes', regex: /(?:眼睛|eye)[：:]\s*([^\n\r]+)/i },
+                { key: 'skin', regex: /(?:肤色|皮肤|skin)[：:]\s*([^\n\r]+)/i },
+                // 性格
+                { key: 'core_traits', regex: /(?:核心特征|性格|personality)[：:]\s*([^\n\r]+)/i },
+                // 背景故事
+                { key: 'background_story', regex: /(?:出身|背景|background)[：:]\s*([^\n\r]+)/i },
             ];
-            for (let pattern of patterns) {
-                const match = text.match(pattern);
-                if (match && match[1]) return match[1].trim();
+            
+            for (let p of patterns) {
+                const match = text.match(p.regex);
+                if (match && match[1]) {
+                    extracted[p.key] = match[1].trim();
+                }
             }
-            return `【未找到${fieldName}】`;
+            
+            // 尝试提取所有带冒号的字段（通用兜底）
+            const lines = text.split(/\r?\n/);
+            for (let line of lines) {
+                if (line.includes('：') || line.includes(':')) {
+                    const parts = line.split(/[：:]/);
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim().replace(/[<>【】]/g, '');
+                        const value = parts.slice(1).join('：').trim();
+                        if (key.length > 0 && value.length > 0 && !extracted[key]) {
+                            extracted[key] = value;
+                        }
+                    }
+                }
+            }
+            
+            return extracted;
+        }
+
+        // 将提取的内容填充到新模板
+        function fillTemplate(template, extractedData, extraContent, insertPosition) {
+            let result = template;
+            
+            // 1. 基础字段替换（遍历提取的数据）
+            for (let [key, value] of Object.entries(extractedData)) {
+                // 支持多种匹配方式：行首 key: 空格 / key: / - key:
+                const regex = new RegExp(`(^\\s*${key}\\s*:\\s*).*`, 'gm');
+                result = result.replace(regex, `$1${value}`);
+            }
+            
+            // 2. 处理补充内容
+            if (extraContent && extraContent.trim() !== '') {
+                const extra = extraContent.trim();
+                const posHint = insertPosition ? insertPosition.toLowerCase() : '';
+                
+                // 尝试找到插入位置
+                if (posHint.includes('末尾') || posHint === '') {
+                    // 追加到末尾
+                    result = result + '\n\n# 补充内容\n' + extra;
+                } 
+                else {
+                    // 尝试找到字段名所在行，插入到该行下面
+                    const lines = result.split(/\r?\n/);
+                    let inserted = false;
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].toLowerCase().includes(posHint.toLowerCase())) {
+                            lines.splice(i + 1, 0, '  ' + extra);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if (inserted) {
+                        result = lines.join('\n');
+                    } else {
+                        // 没找到指定位置，追加到末尾并提示
+                        result = result + '\n\n# 补充内容（未找到指定位置，已追加）\n' + extra;
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        // 生成缺失字段提示
+        function showMissingFields(template, extractedData) {
+            const missing = [];
+            const lines = template.split(/\r?\n/);
+            for (let line of lines) {
+                // 匹配字段定义： xxx:  （且冒号后面没有内容或只有空格）
+                const match = line.match(/^(\s*)([a-zA-Z_\u4e00-\u9fa5]+)\s*:\s*$/);
+                if (match) {
+                    const fieldName = match[2];
+                    if (!extractedData[fieldName] && !extractedData[fieldName.toLowerCase()]) {
+                        missing.push(fieldName);
+                    }
+                }
+            }
+            
+            if (missing.length > 0) {
+                const prompt = `以下字段在旧人设中未找到，需要补充：\n${missing.join('\n')}\n\n请告诉我这些字段的值，或者直接回复“帮我智能补充”。`;
+                missingInfoDiv.style.display = 'block';
+                missingInfoDiv.innerHTML = `<strong>📋 待补充字段清单：</strong><br>${missing.join(' · ')}<br><br>
+                <button id="copyMissingBtn">复制提示词（发给我帮你补充）</button>`;
+                document.getElementById('copyMissingBtn')?.addEventListener('click', () => {
+                    navigator.clipboard.writeText(prompt);
+                    alert('已复制，请粘贴发送给AI助手帮你补充');
+                });
+            } else {
+                missingInfoDiv.style.display = 'none';
+            }
         }
 
         // 主转换函数
         function convert() {
-            let newTemplate = newTemplateTextarea.value;
-            const oldText = document.getElementById('oldContent').value;
-            const extra = document.getElementById('extraContent').value;
-
+            const newTemplate = newTemplateArea.value;
+            const oldProfile = oldProfileArea.value;
+            const extraText = extraTextInput.value;
+            const insertPos = insertPositionInput.value;
+            
             if (!newTemplate.trim()) {
-                document.getElementById('result').innerText = '❌ 请填写新模板（左侧）';
+                resultDiv.innerText = '❌ 请填写新模板（左侧）';
                 return;
             }
-            if (!oldText.trim()) {
-                document.getElementById('result').innerText = '❌ 请粘贴旧人设内容（中间）';
+            if (!oldProfile.trim()) {
+                resultDiv.innerText = '❌ 请粘贴旧人设（中间）';
                 return;
             }
-
-            // 提取关键字段
-            const name = extractField(oldText, '姓名');
-            const personality = extractField(oldText, '性格');
-            const ability = extractField(oldText, '能力');
-
-            // 第一次替换：基础字段
-            let result = newTemplate
-                .replace(/【姓名】/g, name)
-                .replace(/【性格】/g, personality)
-                .replace(/【能力】/g, ability);
-
-            // 替换补充内容占位符
-            const extraReplaced = extra.trim() === '' ? '（无补充）' : extra;
-            result = result.replace(/{{补充内容}}/g, extraReplaced);
-
-            // 如果模板里还残留【XX】未替换，给个提示
-            const leftBrackets = result.match(/【[^】]+】/g);
-            if (leftBrackets) {
-                result += '\n\n⚠️ 提醒：新模板中仍有未填写的字段：' + leftBrackets.join(', ');
-            }
-
-            document.getElementById('result').innerText = result;
+            
+            // 1. 提取旧人设中的信息
+            const extracted = extractFromOldProfile(oldProfile);
+            
+            // 2. 填充新模板
+            let filled = fillTemplate(newTemplate, extracted, extraText, insertPos);
+            
+            // 3. 显示结果
+            resultDiv.innerText = filled;
+            
+            // 4. 显示缺失字段
+            showMissingFields(newTemplate, extracted);
         }
-
-        // 复制结果
+        
         function copyResult() {
-            const resultText = document.getElementById('result').innerText;
-            if (!resultText || resultText === '等待生成…') {
-                alert('没有可复制的内容，请先点击“转换套用”');
+            const text = resultDiv.innerText;
+            if (!text || text === '等待生成...') {
+                alert('没有可复制的内容，请先点击“智能转换”');
                 return;
             }
-            navigator.clipboard.writeText(resultText).then(() => {
+            navigator.clipboard.writeText(text).then(() => {
                 alert('✅ 已复制到剪贴板');
             }).catch(() => {
                 alert('复制失败，可以手动选中文字复制');
             });
         }
-
-        const convertBtn = document.getElementById('convertBtn');
-        if (convertBtn) convertBtn.addEventListener('click', convert);
-        const copyBtn = document.getElementById('copyBtn');
-        if (copyBtn) copyBtn.addEventListener('click', copyResult);
+        
+        convertBtn.addEventListener('click', convert);
+        copyResultBtn.addEventListener('click', copyResult);
+        
+        // 示例：预填一个旧人设示例（方便测试）
+        const exampleOld = `<character_information character="薛寻之">
+核心身份:
+  名称: 薛寻之
+  性别: 男
+  年龄: 38
+背景:
+  出身: 南云省翠屏县
+外貌描写:
+  发型: 黑色短发
+  眼睛: 深棕色
+性格:
+  核心特征: 实用主义，自我中心
+</character_information>`;
+        // 如果你想预填示例，取消下面注释
+        // oldProfileArea.value = exampleOld;
     })();
 </script>
 </body>
