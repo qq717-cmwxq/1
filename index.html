@@ -2,500 +2,203 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>智能人设模板转换器</title>
+    <title>人设模板转换器（手动增强版）</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
-            padding: 16px;
-            color: #0f172a;
-        }
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-size: 1.6rem;
-            text-align: center;
-            margin-bottom: 0.25rem;
-        }
-        .sub {
-            text-align: center;
-            color: #475569;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .panel {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-        }
-        .panel h2 {
-            font-size: 1.2rem;
-            margin-top: 0;
-            margin-bottom: 12px;
-            border-left: 4px solid #3b82f6;
-            padding-left: 10px;
-        }
-        textarea {
-            width: 100%;
-            padding: 12px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-            resize: vertical;
-            margin-bottom: 12px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-            margin-bottom: 12px;
-        }
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-        button.secondary {
-            background: #64748b;
-        }
-        button.success {
-            background: #10b981;
-        }
-        .output {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 16px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-        }
-        .missing-fields {
-            background: #fff7ed;
-            padding: 12px;
-            border-radius: 16px;
-            margin-top: 12px;
-        }
-        .missing-btn {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin: 4px;
-            cursor: pointer;
-        }
-        .field-translation {
-            font-size: 0.7rem;
-            color: #92400e;
-            margin-left: 4px;
-        }
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            margin: 10px 0;
-        }
-        .tip {
-            font-size: 0.75rem;
-            color: #62748c;
-            margin-top: 8px;
-        }
-        .status {
-            font-size: 0.8rem;
-            color: #3b82f6;
-            margin-top: 8px;
-        }
-        @media (max-width: 900px) {
-            .panel { min-width: 100%; }
-        }
+        *{box-sizing:border-box;}
+        body{font-family:system-ui;background:#f1f5f9;margin:0;padding:16px;}
+        .container{max-width:1400px;margin:0 auto;}
+        .grid{display:flex;flex-wrap:wrap;gap:20px;}
+        .panel{flex:1;min-width:280px;background:white;border-radius:24px;padding:18px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+        textarea,input{width:100%;padding:10px;border-radius:16px;border:1px solid #ccc;margin-bottom:12px;}
+        button{background:#3b82f6;color:white;border:none;padding:8px 16px;border-radius:40px;cursor:pointer;margin-right:8px;}
+        .missing-fields{background:#fff7ed;padding:12px;border-radius:16px;margin-top:12px;}
+        .missing-btn{background:#f59e0b;color:white;border:none;padding:6px 12px;border-radius:20px;margin:4px;cursor:pointer;}
+        .output{background:#f8fafc;border-radius:20px;padding:16px;white-space:pre-wrap;font-family:monospace;max-height:500px;overflow:auto;}
+        .status{font-size:0.8rem;color:#3b82f6;margin-top:8px;}
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🧠 智能人设模板转换器</h1>
-    <div class="sub">自动映射 · AI润色 · 可编辑结果 · 一键补充缺失字段</div>
-
+    <h1>📖 人设模板转换器</h1>
     <div class="grid">
         <div class="panel">
-            <h2>📌 新模板（可直接编辑）</h2>
-            <textarea id="newTemplate" rows="12" placeholder="粘贴你的新模板..."></textarea>
-            <button id="resetTemplateBtn" class="secondary">恢复默认模板</button>
+            <h2>📌 新模板</h2>
+            <textarea id="newTemplate" rows="12"></textarea>
+            <button id="resetBtn">恢复默认</button>
         </div>
-
         <div class="panel">
-            <h2>📖 旧人设（任意格式）</h2>
-            <textarea id="oldProfile" rows="8" placeholder="粘贴你写好的旧人设..."></textarea>
-            
-            <h2>🤖 API 模型</h2>
-            <input type="text" id="modelName" placeholder="例如: claude-3-haiku-20240307 / gemini-1.5-flash / gpt-3.5-turbo" value="claude-3-haiku-20240307">
-            
+            <h2>📖 旧人设</h2>
+            <textarea id="oldProfile" rows="8" placeholder="粘贴旧人设..."></textarea>
             <h2>➕ 补充内容（可选）</h2>
             <input type="text" id="extraText" placeholder="补充内容">
-            <input type="text" id="insertPosition" placeholder="插入位置（如：relationships / background_story）">
-            
-            <div class="flex-row">
-                <button id="convertBtn">✨ 智能转换</button>
-                <button id="copyResultBtn" class="secondary">📋 复制结果</button>
-            </div>
+            <input type="text" id="insertPos" placeholder="插入位置，如 relationships">
+            <button id="convertBtn">✨ 智能转换</button>
         </div>
-
         <div class="panel">
-            <h2>✅ 转换结果 <button id="editResultBtn" class="secondary" style="font-size:0.7rem; padding:4px 10px;">✏️ 编辑</button></h2>
+            <h2>✅ 结果 <button id="editBtn" style="font-size:0.7rem;">✏️ 编辑</button></h2>
             <div id="result" class="output" contenteditable="false">等待生成...</div>
-            <div id="missingFieldsPanel" class="missing-fields" style="display:none;">
-                <strong>📋 待补充字段（点击填写，AI将自动润色）：</strong>
-                <div id="missingButtons"></div>
-                <div id="aiStatus" class="status"></div>
+            <div id="missingPanel" class="missing-fields" style="display:none;">
+                <strong>📋 待补充字段（点击填写，自动整理语言）：</strong>
+                <div id="missingBtns"></div>
+                <div id="status" class="status"></div>
             </div>
+            <button id="copyBtn">📋 复制结果</button>
         </div>
     </div>
 </div>
-
 <script>
-    // ============================================================
-    // 🔧 请在这里填写你的 API 配置（在贩子那里买的）
-    // ============================================================
-    const API_CONFIG = {
-        endpoint: "https://nvewvip.preview.tencent-zeabur.cn/v1",   // 👈 在这里填 API 地址
-        apiKey: "sk-AC1DD2mJPeBO3j8YVgoLdfGj2LFAICoEJYP8GMIR0jGJDWU4"                      // 👈 在这里填 API Key
-    };
-    // ============================================================
-
-    // 字段中文翻译
-    const FIELD_TRANSLATION = {
-        'Chinese name': '中文名', 'Nickname': '昵称', 'age': '年龄', 'gender': '性别', 'height': '身高',
-        'face_style': '面容风格', 'hair': '发型', 'eyes': '眼睛', 'skin': '肤色',
-        'background_story': '背景故事', 'relationships': '人际关系', 'personality': '性格',
-        'goals': '目标', 'appearance': '外貌', 'attire': '穿着', 'archetype': '原型',
-        'core_traits': '核心特质', 'romantic_traits': '恋爱特质', 'lifestyle_behaviors': '生活习惯',
-        'work_behaviors': '工作习惯', 'emotional_behaviors': '情绪表现', 'weakness': '弱点',
-        'likes': '喜欢', 'dislikes': '讨厌', 'skills': '技能', 'NSFW_information': 'NSFW信息'
-    };
-
+    // 默认模板
     const DEFAULT_TEMPLATE = `char_name:
   Chinese name: 
   Nickname: 
   age: 
   gender: 
   height: 
-  identity:
-    - 
   background_story:
-    童年(0-12岁):
-    少年(13-18岁):
-    青年(19-35岁):
-    中年(35-至今):
-    现状:
-  
-  social_status: 
-    - 
-
+    童年:
+    少年:
+    青年:
   appearance:
+    face_style: 
     hair: 
     eyes: 
-    skin:
-    face_style: 
-    build: 
-      - 
-  attire:
-    business_formal:
-    business_casual:
-    casual_wear:
-    home_wear:
-
-  archetype: 
-
   personality:
     core_traits: 
-      - : ""
-    romantic_traits: 
-      - : ""
-       
-
-  lifestyle_behaviors:
-    - 
-    - 
-  
-  work_behaviors:
-    - 
-  
-  emotional_behaviors:
-    angry:
-    happy: 
-
-  goals:
-    - 
-  
   relationships:
     - name: 
       relationship: 
-      description: 
+  goals:
+    - `;
 
-  shared_history_with_user:
-    - 
-    - 
-
-  weakness:
-    - 
-
-  likes:
-    - 
-
-  dislikes:
-    - 
-  
-  skills:
-    - 工作: ["",""]
-    - 生活: ["",""]
-    - 爱好: ["",""]
-
-  NSFW_information:
-    Sex_related traits:
-      experiences: 
-      sexual_orientation: 
-      sexual_role: 
-      sexual_habits: 
-        - 
-    Kinks: 
-    Limits:`;
-
+    // 字段映射
     const FIELD_MAP = {
-        'Chinese name': ['名称', '姓名', '名字', 'name'],
-        'Nickname': ['昵称', '别名', 'nickname'],
-        'age': ['年龄', 'age'],
-        'gender': ['性别', 'gender'],
-        'height': ['身高', 'height'],
-        'face_style': ['面部特征', '脸型', '面容', '长相'],
-        'hair': ['发型', '头发', 'hair'],
-        'eyes': ['眼睛', '眼', 'eyes'],
-        'skin': ['肤色', '皮肤', 'skin'],
-        'background_story': ['背景', '出身', '关键经历', 'background'],
-        'relationships': ['关系', '人物', 'relationship'],
-        'personality': ['性格', '核心特征', 'personality'],
-        'goals': ['目标', '动机', '目标动机']
+        'Chinese name': ['名称','姓名','name'],
+        'age': ['年龄','age'],
+        'gender': ['性别','gender'],
+        'face_style': ['面部特征','脸型','面容'],
+        'hair': ['发型','hair'],
+        'eyes': ['眼睛','eyes'],
+        'background_story': ['背景','出身','经历'],
+        'personality': ['性格','核心特征'],
+        'relationships': ['关系','人物']
     };
 
     let currentResult = '';
-    let missingFieldsList = [];
+    let missingFields = [];
     let isEditing = false;
 
-    function extractFromOldProfile(text) {
-        const extracted = {};
-        for (let [targetKey, keywords] of Object.entries(FIELD_MAP)) {
-            for (let kw of keywords) {
-                const regex = new RegExp(`${kw}[：:]\\s*([^\\n\\r【】]+)`, 'i');
-                const match = text.match(regex);
-                if (match && match[1]) {
-                    extracted[targetKey] = match[1].trim();
-                    break;
-                }
+    // 提取旧人设
+    function extractOld(text) {
+        let data = {};
+        for (let [key, words] of Object.entries(FIELD_MAP)) {
+            for (let w of words) {
+                let match = text.match(new RegExp(`${w}[：:]\\s*([^\\n\\r]+)`, 'i'));
+                if (match) { data[key] = match[1].trim(); break; }
             }
         }
-        return extracted;
+        return data;
     }
 
-    function fillTemplate(template, extractedData, extraContent, insertPosition) {
-        let result = template;
-        for (let [key, value] of Object.entries(extractedData)) {
-            const regex = new RegExp(`(^\\s*${key}\\s*:\\s*).*`, 'gm');
-            result = result.replace(regex, `$1${value}`);
+    // 填充模板（同一行）
+    function fillTemplate(tmpl, data, extra, pos) {
+        let result = tmpl;
+        for (let [k,v] of Object.entries(data)) {
+            let regex = new RegExp(`(^\\s*${k}\\s*:\\s*).*`, 'gm');
+            result = result.replace(regex, `$1${v}`);
         }
-        
-        if (extraContent && extraContent.trim() !== '') {
-            const extra = extraContent.trim();
-            const posHint = insertPosition ? insertPosition.toLowerCase() : '';
-            if (posHint === '' || posHint.includes('末尾')) {
-                result = result + '\n\n补充内容: ' + extra;
-            } else {
-                const lines = result.split(/\r?\n/);
-                let inserted = false;
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].toLowerCase().includes(posHint.toLowerCase())) {
-                        lines.splice(i + 1, 0, '  ' + extra);
-                        inserted = true;
-                        break;
-                    }
-                }
-                if (!inserted) result = result + '\n\n补充内容: ' + extra;
-                else result = lines.join('\n');
-            }
+        if (extra.trim()) {
+            if (!pos || pos.includes('末尾')) result += `\n补充内容: ${extra}`;
+            else result = result.replace(new RegExp(`(${pos}[^\\n]*)`), `$1\n  ${extra}`);
         }
         return result;
     }
 
-    function detectMissingFields(template, extractedData) {
-        const missing = [];
-        const lines = template.split(/\r?\n/);
+    // 检测缺失字段（冒号后为空）
+    function findMissing(tmpl, extracted) {
+        let missing = [];
+        let lines = tmpl.split('\n');
         for (let line of lines) {
-            const match = line.match(/^(\s*)([a-zA-Z_\u4e00-\u9fa5]+)\s*:\s*$/);
-            if (match) {
-                const fieldName = match[2];
-                const hasValue = extractedData[fieldName] || extractedData[fieldName.toLowerCase()];
-                if (!hasValue && !missing.includes(fieldName)) missing.push(fieldName);
-            }
+            let m = line.match(/^(\s*)([a-zA-Z\u4e00-\u9fa5]+)\s*:\s*$/);
+            if (m && !extracted[m[2]]) missing.push(m[2]);
         }
         return missing;
     }
 
-    async function polishWithAI(rawText, modelName) {
-        if (!API_CONFIG.endpoint.includes('你的API地址') && !API_CONFIG.apiKey.includes('你的密钥')) {
-            return rawText.replace(/\s+/g, ' ').trim();
-        }
-        try {
-            const response = await fetch(API_CONFIG.endpoint + '/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_CONFIG.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: modelName,
-                    messages: [
-                        { role: 'system', content: '你是一个人设润色助手。请把用户输入的口语描述改写成规整、正式的角色设定语言，保持原意，不要添加额外信息。直接输出润色后的结果，不要有任何解释。' },
-                        { role: 'user', content: rawText }
-                    ],
-                    temperature: 0.5,
-                    max_tokens: 300
-                })
-            });
-            if (response.ok) {
-                const data = await response.json();
-                return data.choices[0].message.content.trim();
-            } else {
-                console.log('API返回错误', response.status);
-                return rawText.replace(/\s+/g, ' ').trim();
-            }
-        } catch (e) {
-            console.log('API调用失败', e);
-            return rawText.replace(/\s+/g, ' ').trim();
-        }
+    // 本地语言整理（不用API）
+    function polishLocal(raw) {
+        return raw.replace(/\s+/g, ' ').replace(/^[，,、]+/, '').trim();
     }
 
     function updateResult(newResult) {
         currentResult = newResult;
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerText = currentResult;
-        if (!isEditing) resultDiv.setAttribute('contenteditable', 'false');
+        document.getElementById('result').innerText = currentResult;
+        if (!isEditing) document.getElementById('result').setAttribute('contenteditable','false');
     }
 
     async function convert() {
-        const newTemplate = document.getElementById('newTemplate').value;
-        const oldProfile = document.getElementById('oldProfile').value;
-        const extraText = document.getElementById('extraText').value;
-        const insertPos = document.getElementById('insertPosition').value;
-        const modelName = document.getElementById('modelName').value;
-        
-        if (!newTemplate.trim() || !oldProfile.trim()) {
-            alert('请填写新模板和旧人设');
-            return;
-        }
-        
-        const extracted = extractFromOldProfile(oldProfile);
-        let filled = fillTemplate(newTemplate, extracted, extraText, insertPos);
-        missingFieldsList = detectMissingFields(newTemplate, extracted);
+        let tmpl = document.getElementById('newTemplate').value;
+        let old = document.getElementById('oldProfile').value;
+        let extra = document.getElementById('extraText').value;
+        let pos = document.getElementById('insertPos').value;
+        if (!tmpl || !old) { alert('请填写模板和旧人设'); return; }
+        let extracted = extractOld(old);
+        let filled = fillTemplate(tmpl, extracted, extra, pos);
+        missingFields = findMissing(tmpl, extracted);
         updateResult(filled);
-        
-        if (missingFieldsList.length > 0) {
-            const container = document.getElementById('missingButtons');
+        if (missingFields.length) {
+            let container = document.getElementById('missingBtns');
             container.innerHTML = '';
-            for (let field of missingFieldsList) {
-                const btn = document.createElement('button');
-                const translation = FIELD_TRANSLATION[field] || '';
-                btn.innerText = field;
+            for (let f of missingFields) {
+                let btn = document.createElement('button');
+                btn.innerText = f;
                 btn.className = 'missing-btn';
-                btn.innerHTML = `${field} <span class="field-translation">${translation ? '('+translation+')' : ''}</span>`;
-                btn.onclick = () => showFieldInput(field, modelName);
+                btn.onclick = () => fillField(f);
                 container.appendChild(btn);
             }
-            document.getElementById('missingFieldsPanel').style.display = 'block';
-        } else {
-            document.getElementById('missingFieldsPanel').style.display = 'none';
-        }
+            document.getElementById('missingPanel').style.display = 'block';
+        } else document.getElementById('missingPanel').style.display = 'none';
     }
-    
-    async function showFieldInput(fieldName, modelName) {
-        const userInput = prompt(`请输入【${fieldName}】的内容（AI会自动润色）：`);
-        if (!userInput) return;
-        
-        const statusDiv = document.getElementById('aiStatus');
-        statusDiv.innerText = `⏳ 正在用 ${modelName} 润色...`;
-        
-        const polished = await polishWithAI(userInput, modelName);
-        
-        const lines = currentResult.split(/\r?\n/);
-        let found = false;
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].match(new RegExp(`^\\s*${fieldName}\\s*:\\s*$`))) {
-                lines[i + 1] = `  ${polished}`;
-                found = true;
+
+    async function fillField(field) {
+        let raw = prompt(`请输入【${field}】的内容（口语即可，会自动整理）：`);
+        if (!raw) return;
+        let polished = polishLocal(raw);
+        let lines = currentResult.split('\n');
+        let replaced = false;
+        for (let i=0; i<lines.length; i++) {
+            if (lines[i].match(new RegExp(`^\\s*${field}\\s*:\\s*$`))) {
+                lines[i+1] = `  ${polished}`;
+                replaced = true;
                 break;
             }
         }
-        if (!found) lines.push(`${fieldName}: ${polished}`);
-        
+        if (!replaced) lines.push(`${field}: ${polished}`);
         updateResult(lines.join('\n'));
-        statusDiv.innerText = `✅ ${fieldName} 已补充并润色`;
-        setTimeout(() => { statusDiv.innerText = ''; }, 2000);
+        document.getElementById('status').innerText = `✅ ${field} 已添加`;
+        setTimeout(()=>document.getElementById('status').innerText='',1500);
     }
-    
-    function copyResult() {
-        if (!currentResult) { alert('没有可复制的内容'); return; }
-        navigator.clipboard.writeText(currentResult).then(() => alert('✅ 已复制')).catch(() => alert('复制失败'));
-    }
-    
-    document.getElementById('editResultBtn').onclick = () => {
-        const resultDiv = document.getElementById('result');
-        const btn = document.getElementById('editResultBtn');
+
+    document.getElementById('convertBtn').onclick = convert;
+    document.getElementById('copyBtn').onclick = () => {
+        if (!currentResult) return;
+        navigator.clipboard.writeText(currentResult);
+        alert('已复制');
+    };
+    document.getElementById('editBtn').onclick = () => {
+        let div = document.getElementById('result');
+        let btn = document.getElementById('editBtn');
         if (isEditing) {
-            resultDiv.setAttribute('contenteditable', 'false');
+            div.setAttribute('contenteditable','false');
             btn.innerText = '✏️ 编辑';
-            btn.className = 'secondary';
-            updateResult(resultDiv.innerText);
+            updateResult(div.innerText);
         } else {
-            resultDiv.setAttribute('contenteditable', 'true');
-            resultDiv.focus();
+            div.setAttribute('contenteditable','true');
+            div.focus();
             btn.innerText = '💾 保存';
-            btn.className = 'success';
         }
         isEditing = !isEditing;
     };
-    
-    document.getElementById('convertBtn').onclick = convert;
-    document.getElementById('copyResultBtn').onclick = copyResult;
-    document.getElementById('resetTemplateBtn').onclick = () => {
+    document.getElementById('resetBtn').onclick = () => {
         document.getElementById('newTemplate').value = DEFAULT_TEMPLATE;
     };
     document.getElementById('newTemplate').value = DEFAULT_TEMPLATE;
