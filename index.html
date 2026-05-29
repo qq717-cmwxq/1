@@ -62,7 +62,7 @@
             resize: vertical;
             margin-bottom: 12px;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             font-size: 14px;
@@ -110,11 +110,16 @@
             background: #f59e0b;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
             margin: 4px;
             cursor: pointer;
+        }
+        .field-translation {
+            font-size: 0.7rem;
+            color: #92400e;
+            margin-left: 4px;
         }
         .flex-row {
             display: flex;
@@ -144,21 +149,22 @@
     <div class="sub">自动映射 · AI润色 · 可编辑结果 · 一键补充缺失字段</div>
 
     <div class="grid">
-        <!-- 左侧：新模板 -->
         <div class="panel">
             <h2>📌 新模板（可直接编辑）</h2>
-            <textarea id="newTemplate" rows="14" placeholder="粘贴你的新模板..."></textarea>
+            <textarea id="newTemplate" rows="12" placeholder="粘贴你的新模板..."></textarea>
             <button id="resetTemplateBtn" class="secondary">恢复默认模板</button>
         </div>
 
-        <!-- 中间：旧人设 + 补充 -->
         <div class="panel">
             <h2>📖 旧人设（任意格式）</h2>
-            <textarea id="oldProfile" rows="10" placeholder="粘贴你写好的旧人设..."></textarea>
+            <textarea id="oldProfile" rows="8" placeholder="粘贴你写好的旧人设..."></textarea>
+            
+            <h2>🤖 API 模型</h2>
+            <input type="text" id="modelName" placeholder="例如: claude-3-haiku-20240307 / gemini-1.5-flash / gpt-3.5-turbo" value="claude-3-haiku-20240307">
             
             <h2>➕ 补充内容（可选）</h2>
             <input type="text" id="extraText" placeholder="补充内容">
-            <input type="text" id="insertPosition" placeholder="插入位置（如：relationships / background_story / 末尾）">
+            <input type="text" id="insertPosition" placeholder="插入位置（如：relationships / background_story）">
             
             <div class="flex-row">
                 <button id="convertBtn">✨ 智能转换</button>
@@ -166,7 +172,6 @@
             </div>
         </div>
 
-        <!-- 右侧：结果 -->
         <div class="panel">
             <h2>✅ 转换结果 <button id="editResultBtn" class="secondary" style="font-size:0.7rem; padding:4px 10px;">✏️ 编辑</button></h2>
             <div id="result" class="output" contenteditable="false">等待生成...</div>
@@ -181,7 +186,7 @@
 
 <script>
     // ============================================================
-    // 🔧 请在这里填写你的 API 配置（在酒馆里找到这两项）
+    // 🔧 请在这里填写你的 API 配置（在贩子那里买的）
     // ============================================================
     const API_CONFIG = {
         endpoint: "https://nvewvip.preview.tencent-zeabur.cn/v1",   // 👈 在这里填 API 地址
@@ -189,7 +194,17 @@
     };
     // ============================================================
 
-    // 默认新模板
+    // 字段中文翻译
+    const FIELD_TRANSLATION = {
+        'Chinese name': '中文名', 'Nickname': '昵称', 'age': '年龄', 'gender': '性别', 'height': '身高',
+        'face_style': '面容风格', 'hair': '发型', 'eyes': '眼睛', 'skin': '肤色',
+        'background_story': '背景故事', 'relationships': '人际关系', 'personality': '性格',
+        'goals': '目标', 'appearance': '外貌', 'attire': '穿着', 'archetype': '原型',
+        'core_traits': '核心特质', 'romantic_traits': '恋爱特质', 'lifestyle_behaviors': '生活习惯',
+        'work_behaviors': '工作习惯', 'emotional_behaviors': '情绪表现', 'weakness': '弱点',
+        'likes': '喜欢', 'dislikes': '讨厌', 'skills': '技能', 'NSFW_information': 'NSFW信息'
+    };
+
     const DEFAULT_TEMPLATE = `char_name:
   Chinese name: 
   Nickname: 
@@ -277,7 +292,6 @@
     Kinks: 
     Limits:`;
 
-    // 字段映射表（新模板字段 → 旧人设中可能的关键词）
     const FIELD_MAP = {
         'Chinese name': ['名称', '姓名', '名字', 'name'],
         'Nickname': ['昵称', '别名', 'nickname'],
@@ -298,64 +312,33 @@
     let missingFieldsList = [];
     let isEditing = false;
 
-    // 从旧人设中提取信息（增强版）
     function extractFromOldProfile(text) {
         const extracted = {};
-        
         for (let [targetKey, keywords] of Object.entries(FIELD_MAP)) {
             for (let kw of keywords) {
-                // 匹配格式：关键词: 内容  或  关键词：内容
                 const regex = new RegExp(`${kw}[：:]\\s*([^\\n\\r【】]+)`, 'i');
                 const match = text.match(regex);
                 if (match && match[1]) {
                     extracted[targetKey] = match[1].trim();
                     break;
                 }
-                // 匹配列表格式：- 关键词: 内容
-                const listRegex = new RegExp(`-\\s*${kw}[：:]\\s*([^\\n\\r]+)`, 'i');
-                const listMatch = text.match(listRegex);
-                if (listMatch && listMatch[1]) {
-                    extracted[targetKey] = listMatch[1].trim();
-                    break;
-                }
             }
         }
-        
-        // 额外：尝试提取所有“xxx: yyy”格式的内容作为兜底
-        const lines = text.split(/\r?\n/);
-        for (let line of lines) {
-            if (line.includes('：') || line.includes(':')) {
-                const parts = line.split(/[：:]/);
-                if (parts.length >= 2) {
-                    const key = parts[0].trim().replace(/[<>【】-]/g, '');
-                    const value = parts.slice(1).join('：').trim();
-                    if (key.length > 0 && value.length > 0 && !extracted[key]) {
-                        extracted[key] = value;
-                    }
-                }
-            }
-        }
-        
         return extracted;
     }
 
-    // 填充模板
     function fillTemplate(template, extractedData, extraContent, insertPosition) {
         let result = template;
-        
-        // 基础填充
         for (let [key, value] of Object.entries(extractedData)) {
             const regex = new RegExp(`(^\\s*${key}\\s*:\\s*).*`, 'gm');
             result = result.replace(regex, `$1${value}`);
         }
         
-        // 处理补充内容
         if (extraContent && extraContent.trim() !== '') {
             const extra = extraContent.trim();
             const posHint = insertPosition ? insertPosition.toLowerCase() : '';
-            
             if (posHint === '' || posHint.includes('末尾')) {
-                result = result + '\n\n# 补充内容\n' + extra;
+                result = result + '\n\n补充内容: ' + extra;
             } else {
                 const lines = result.split(/\r?\n/);
                 let inserted = false;
@@ -366,18 +349,13 @@
                         break;
                     }
                 }
-                if (!inserted) {
-                    result = result + '\n\n# 补充内容（未找到位置，已追加）\n' + extra;
-                } else {
-                    result = lines.join('\n');
-                }
+                if (!inserted) result = result + '\n\n补充内容: ' + extra;
+                else result = lines.join('\n');
             }
         }
-        
         return result;
     }
 
-    // 检测缺失字段
     function detectMissingFields(template, extractedData) {
         const missing = [];
         const lines = template.split(/\r?\n/);
@@ -385,24 +363,17 @@
             const match = line.match(/^(\s*)([a-zA-Z_\u4e00-\u9fa5]+)\s*:\s*$/);
             if (match) {
                 const fieldName = match[2];
-                const hasValue = extractedData[fieldName] || 
-                                 extractedData[fieldName.toLowerCase()] ||
-                                 (line.includes(': ') && line.split(': ')[1]?.trim() !== '');
-                if (!hasValue && !missing.includes(fieldName)) {
-                    missing.push(fieldName);
-                }
+                const hasValue = extractedData[fieldName] || extractedData[fieldName.toLowerCase()];
+                if (!hasValue && !missing.includes(fieldName)) missing.push(fieldName);
             }
         }
         return missing;
     }
 
-    // 调用 AI 润色（使用你的 API）
-    async function polishWithAI(rawText) {
+    async function polishWithAI(rawText, modelName) {
         if (!API_CONFIG.endpoint.includes('你的API地址') && !API_CONFIG.apiKey.includes('你的密钥')) {
-            // 简单润色：首字母大写，去掉多余空格
             return rawText.replace(/\s+/g, ' ').trim();
         }
-        
         try {
             const response = await fetch(API_CONFIG.endpoint + '/chat/completions', {
                 method: 'POST',
@@ -411,71 +382,62 @@
                     'Authorization': `Bearer ${API_CONFIG.apiKey}`
                 },
                 body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',
+                    model: modelName,
                     messages: [
-                        { role: 'system', content: '你是一个人设润色助手。请把用户输入的口语描述改写成规整、正式的角色设定语言，保持原意，不要添加额外信息。直接输出润色后的结果。' },
+                        { role: 'system', content: '你是一个人设润色助手。请把用户输入的口语描述改写成规整、正式的角色设定语言，保持原意，不要添加额外信息。直接输出润色后的结果，不要有任何解释。' },
                         { role: 'user', content: rawText }
                     ],
-                    temperature: 0.7,
+                    temperature: 0.5,
                     max_tokens: 300
                 })
             });
-            
             if (response.ok) {
                 const data = await response.json();
                 return data.choices[0].message.content.trim();
+            } else {
+                console.log('API返回错误', response.status);
+                return rawText.replace(/\s+/g, ' ').trim();
             }
         } catch (e) {
-            console.log('API调用失败，使用本地润色', e);
+            console.log('API调用失败', e);
+            return rawText.replace(/\s+/g, ' ').trim();
         }
-        
-        // 降级：本地简单润色
-        return rawText.replace(/\s+/g, ' ').trim();
     }
 
-    // 更新结果到界面
     function updateResult(newResult) {
         currentResult = newResult;
         const resultDiv = document.getElementById('result');
         resultDiv.innerText = currentResult;
-        if (!isEditing) {
-            resultDiv.setAttribute('contenteditable', 'false');
-        }
+        if (!isEditing) resultDiv.setAttribute('contenteditable', 'false');
     }
 
-    // 转换主流程
     async function convert() {
         const newTemplate = document.getElementById('newTemplate').value;
         const oldProfile = document.getElementById('oldProfile').value;
         const extraText = document.getElementById('extraText').value;
         const insertPos = document.getElementById('insertPosition').value;
+        const modelName = document.getElementById('modelName').value;
         
         if (!newTemplate.trim() || !oldProfile.trim()) {
             alert('请填写新模板和旧人设');
             return;
         }
         
-        // 1. 提取
         const extracted = extractFromOldProfile(oldProfile);
-        
-        // 2. 填充
         let filled = fillTemplate(newTemplate, extracted, extraText, insertPos);
-        
-        // 3. 检测缺失
         missingFieldsList = detectMissingFields(newTemplate, extracted);
-        
-        // 4. 显示结果
         updateResult(filled);
         
-        // 5. 生成缺失字段按钮
         if (missingFieldsList.length > 0) {
             const container = document.getElementById('missingButtons');
             container.innerHTML = '';
             for (let field of missingFieldsList) {
                 const btn = document.createElement('button');
+                const translation = FIELD_TRANSLATION[field] || '';
                 btn.innerText = field;
                 btn.className = 'missing-btn';
-                btn.onclick = () => showFieldInput(field);
+                btn.innerHTML = `${field} <span class="field-translation">${translation ? '('+translation+')' : ''}</span>`;
+                btn.onclick = () => showFieldInput(field, modelName);
                 container.appendChild(btn);
             }
             document.getElementById('missingFieldsPanel').style.display = 'block';
@@ -484,17 +446,15 @@
         }
     }
     
-    // 弹出输入框，AI润色后填入
-    async function showFieldInput(fieldName) {
-        const userInput = prompt(`请输入【${fieldName}】的内容（可以用口语描述，AI会自动润色）：`);
+    async function showFieldInput(fieldName, modelName) {
+        const userInput = prompt(`请输入【${fieldName}】的内容（AI会自动润色）：`);
         if (!userInput) return;
         
         const statusDiv = document.getElementById('aiStatus');
-        statusDiv.innerText = `⏳ 正在润色 ${fieldName}...`;
+        statusDiv.innerText = `⏳ 正在用 ${modelName} 润色...`;
         
-        const polished = await polishWithAI(userInput);
+        const polished = await polishWithAI(userInput, modelName);
         
-        // 将润色后的内容填入当前结果中
         const lines = currentResult.split(/\r?\n/);
         let found = false;
         for (let i = 0; i < lines.length; i++) {
@@ -504,55 +464,41 @@
                 break;
             }
         }
+        if (!found) lines.push(`${fieldName}: ${polished}`);
         
-        if (!found) {
-            // 没找到对应行，追加到末尾
-            lines.push(`${fieldName}: ${polished}`);
-        }
-        
-        const newResult = lines.join('\n');
-        updateResult(newResult);
+        updateResult(lines.join('\n'));
         statusDiv.innerText = `✅ ${fieldName} 已补充并润色`;
         setTimeout(() => { statusDiv.innerText = ''; }, 2000);
     }
     
     function copyResult() {
-        if (!currentResult) {
-            alert('没有可复制的内容');
-            return;
-        }
-        navigator.clipboard.writeText(currentResult).then(() => {
-            alert('✅ 已复制');
-        }).catch(() => alert('复制失败'));
+        if (!currentResult) { alert('没有可复制的内容'); return; }
+        navigator.clipboard.writeText(currentResult).then(() => alert('✅ 已复制')).catch(() => alert('复制失败'));
     }
     
-    let editBtn = document.getElementById('editResultBtn');
-    let resultDiv = document.getElementById('result');
-    editBtn.onclick = () => {
+    document.getElementById('editResultBtn').onclick = () => {
+        const resultDiv = document.getElementById('result');
+        const btn = document.getElementById('editResultBtn');
         if (isEditing) {
             resultDiv.setAttribute('contenteditable', 'false');
-            editBtn.innerText = '✏️ 编辑';
-            editBtn.className = 'secondary';
+            btn.innerText = '✏️ 编辑';
+            btn.className = 'secondary';
             updateResult(resultDiv.innerText);
         } else {
             resultDiv.setAttribute('contenteditable', 'true');
             resultDiv.focus();
-            editBtn.innerText = '💾 保存';
-            editBtn.className = 'success';
+            btn.innerText = '💾 保存';
+            btn.className = 'success';
         }
         isEditing = !isEditing;
     };
     
-    // 初始化
-    document.getElementById('newTemplate').value = DEFAULT_TEMPLATE;
     document.getElementById('convertBtn').onclick = convert;
     document.getElementById('copyResultBtn').onclick = copyResult;
     document.getElementById('resetTemplateBtn').onclick = () => {
         document.getElementById('newTemplate').value = DEFAULT_TEMPLATE;
     };
-    
-    // 预填示例旧人设（方便测试，可删除）
-    // document.getElementById('oldProfile').value = `<character_information character="薛寻之">\n核心身份:\n  名称: 薛寻之\n  性别: 男\n  年龄: 38\n外貌描写:\n  面部特征: 脸部轮廓清晰，眉眼深邃\n</character_information>`;
+    document.getElementById('newTemplate').value = DEFAULT_TEMPLATE;
 </script>
 </body>
 </html>
